@@ -110,8 +110,8 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        String fPos = null;
-        String lPos = null;
+        String fPos;
+        String lPos;
         boolean error = false;
         Field player1Field = new Field();
         Field player2Field = new Field();
@@ -368,11 +368,13 @@ public class Main {
                 lLetterPos = l.getNum();
             }
         }
+        // check length if on same line
         if (fLetter == lLetter) {
             dif = fNum > lNum ? fNum - lNum : lNum - fNum;
             if (dif + 1 != shipCells) {
                 throw new RuntimeException("Error! Wrong length of the " + shipName + "! Try again:");
             }
+            // check length if on different lines
         } else {
             for (int i = Math.min(fLetterPos,lLetterPos); i <= Math.max(lLetterPos, fLetterPos); i++) {
                 dif++;
@@ -381,6 +383,7 @@ public class Main {
                 throw new RuntimeException("Error! Wrong length of the " + shipName + "! Try again:");
             }
         }
+        // check if not in line or column and throw error
         if (!String.valueOf(fLetter).equalsIgnoreCase(String.valueOf(lLetter)) && fNum != lNum) {
             throw new RuntimeException("Error! Wrong ship location! Try again:");
         }
@@ -422,14 +425,16 @@ public class Main {
             }
         }
 
-        // check if what we added is near another ship
+        // check if what we added is near another ship (1 cell difference)
+
         String[] addedSplit = added.toString().split(" ");
         String[] start = addedSplit[0].split(":");
         String[] end = addedSplit[addedSplit.length - 1].split(":");
 
-        // check if is more then 1 space on line or collumn
+        // get values for check if is more then 1 space in line
         int startIntcolumn = Integer.parseInt(start[1]);
         int endIntcolumn = Integer.parseInt(end[1]);
+        // get values for check if is more then 1 space in column
         int startIntLine = Integer.parseInt(start[0]);
         int endIntLine = Integer.parseInt(end[0]);
 
@@ -449,8 +454,10 @@ public class Main {
                 String[] coord = addedSplit[i].split(":");
                 int line = Integer.parseInt(coord[0]);
                 int col = Integer.parseInt(coord[1]);
+                // check if is more then 1 space in line
                 if (type == 2 && (tempField[line + 1][col] == 'O' || tempField[line - 1][col] == 'O')) {
                     occupied++;
+                    // check if is more then 1 space in column
                 } else if (type == 1 && (tempField[line][col + 1] == 'O' || tempField[line][col - 1] == 'O')) {
                     occupied++;
                 }
@@ -459,17 +466,21 @@ public class Main {
         } catch (ArrayIndexOutOfBoundsException ignored) {
 
         }
+        // throw error if is near another ship
         if (occupied > 0) {
             throw new RuntimeException("Error! You placed it too close to another one. Try again:");
         } else {
+            // we set the new field.
             f.setField(tempField);
+            // save the ship locations
             addShip(f, added.toString());
         }
     }
 
-    // generate OR show field and temporary enemy field for battleship game
+    // generate field and temporary field OR show them
     static void generateField(Field f, int type, int temp) {
         char[][] field;
+        // if temp == 0, we work with the main field, else we work with the temporary one
         if (temp == 0) {
             field = f.getField();
         } else {
@@ -524,11 +535,13 @@ public class Main {
 
     // take a shot to the ship and save it to list if succeeded
     public static void addShot(Field f, String shot) {
+        // we get the shots list for the field object
         String[] shots = f.getShipShot();
         int lastShot = 0;
         boolean firstShot = false;
         for (int i = 0; i < shots.length; i++) {
             if (!Objects.equals(shots[i], null)) {
+                // we get the last position, so we can save the added shot coordinates
                 lastShot = i;
                 firstShot = true;
             }
@@ -538,16 +551,19 @@ public class Main {
         } else {
             shots[lastShot + 1] = shot;
         }
+        // save the shot coordinates
         f.setShipShot(shots);
     }
 
     // add ship to field ship list
     public static void addShip(Field f, String shipPos) {
+        // we get the ships list for the field object
         String[] ships = f.getShipList();
         int lastShip = 0;
         boolean firstShip = false;
         for (int i = 0; i < ships.length; i++) {
             if (!Objects.equals(ships[i], null)) {
+                // we get the last position, so we can save the added ship coordinates
                 lastShip = i;
                 firstShip = true;
             }
@@ -557,6 +573,7 @@ public class Main {
         } else {
             ships[lastShip + 1] = shipPos;
         }
+        // set new value for ShipList for the field object.
         f.setShipList(ships);
     }
 
@@ -576,13 +593,17 @@ public class Main {
                     for (int k = 0; k < shots.length; k++) {
                         if (!Objects.equals(shots[k], null)) {
                             if (str1[j].equals(shots[k])) {
+                                // we increment if found shipList[i] in the shots[k] array
                                 nrOfHitCells++;
                             }
                         }
                     }
+                    // we increment the number of shiplist[i] coordinates
                     nrOfCells++;
                 }
             }
+            // if the hits are equal with the number of coordinates found in shipList
+            // all the ships are sunken, so game Over.
             if (nrOfCells == nrOfHitCells) {
                 isSunk = true;
                 break;
